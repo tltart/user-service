@@ -1,0 +1,7 @@
+**node_modules
+**pg_data
+dist
+.env
+**.eslint*
+.prettier*
+.git*
