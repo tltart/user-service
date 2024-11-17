@@ -6,6 +6,6 @@ export class ReadUserDto {
   readonly firstName: string;
   readonly lastName: string;
   readonly phone: string;
-  readonly workAddress: ReadAddressDto;
-  readonly homeAddress: ReadAddressDto;
+  workAddress: ReadAddressDto;
+  homeAddress: ReadAddressDto;
 }

@@ -42,8 +42,8 @@ export class UpdateUserDto {
   readonly phone: string;
 
   @ApiProperty({ type: CreateAddressDto, required: false })
-  readonly workAddress?: CreateAddressDto;
+  workAddress?: CreateAddressDto;
 
   @ApiProperty({ type: CreateAddressDto, required: false })
-  readonly homeAddress?: CreateAddressDto;
+  homeAddress?: CreateAddressDto;
 }

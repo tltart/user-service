@@ -9,14 +9,12 @@ import { pickObjKeys } from '../../shared/helpers/helper';
 
 @Injectable()
 export class AddresService {
-  constructor(
-    @InjectRepository(Address) private addressRepository: Repository<Address>,
-  ) {}
+  constructor(@InjectRepository(Address) private addressRepository: Repository<Address>) {}
 
-  async createAddress(adres: CreateAddressDto): Promise<ReadAddressDto> {
-    await this.checkNewAdres(adres);
+  async createAddress(address: CreateAddressDto): Promise<ReadAddressDto> {
+    if (await this.checkAddress(address)) throw new BadRequestException('Адрес существует');
 
-    const newAddress = this.addressRepository.create(adres);
+    const newAddress = this.addressRepository.create(address);
     await this.addressRepository.save(newAddress);
 
     if (!newAddress) throw new InternalServerErrorException('Адрес не может быть создан');
@@ -28,20 +26,25 @@ export class AddresService {
   }
 
   toReadAddressDto(v: any): ReadAddressDto {
-    return pickObjKeys(<ReadAddressDto>v, 'id', 'town', 'street', 'houseNumber');
+    const readAddressDto: ReadAddressDto = {
+      id: v.id,
+      town: v.town,
+      street: v.street,
+      houseNumber: v.houseNumber,
+      users: v.users?.map((user: any) => user) || [],
+    };
+
+    return readAddressDto;
   }
 
-  private async checkNewAdres(adres: CreateAddressDto): Promise<void> {
-    if (
-      await this.addressRepository.findOne({
-        where: {
-          town: adres.town,
-          street: adres.street,
-          houseNumber: adres.houseNumber,
-        },
-      })
-    )
-      throw new BadRequestException('Адрес существует');
+  async checkAddress(address: CreateAddressDto): Promise<Address> {
+    return this.addressRepository.findOne({
+      where: {
+        town: address.town,
+        street: address.street,
+        houseNumber: address.houseNumber,
+      },
+    });
   }
 
   async getAdresById(id: number): Promise<Address> {
@@ -58,7 +61,8 @@ export class AddresService {
 
     const editAddressDto = this.toUpdateAddressDto(address);
     const editedAddress = await this.addressRepository.update(id, editAddressDto);
-    if (!editedAddress) throw new InternalServerErrorException('Адрес не может быть отредактирован');
+    if (!editedAddress)
+      throw new InternalServerErrorException('Адрес не может быть отредактирован');
 
     const editedAddressRow = await this.addressRepository.findOne({ where: { id } });
 
@@ -71,7 +75,13 @@ export class AddresService {
 
   async deleteAddress(id: number): Promise<void> {
     const result = await this.addressRepository.delete(id);
-    if (!result || !result.affected) throw new InternalServerErrorException('Адрес не может быть удален');
+    if (!result || !result.affected)
+      throw new InternalServerErrorException('Адрес не может быть удален');
+  }
+
+  async getAddress(id: number): Promise<ReadAddressDto> {
+    const address = await this.addressRepository.findOne({ where: { id }, relations: ['users'] });
+    return this.toReadAddressDto(address);
   }
 
   private async checkUpdateAddress(id: number): Promise<void> {

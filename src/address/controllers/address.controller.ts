@@ -55,9 +55,21 @@ export class AdresController {
     }
   @Delete('/:id')
   @ApiOperation({ summary: 'Delete address' })
-  async deleteAdres(@Param('id') id: number) {
+  async deleteAddress(@Param('id') id: number) {
     return await this.addressService
       .deleteAddress(id)
+      .then((result) => {
+        return result;
+      })
+      .catch((err) => {
+        throw new BadRequestException(err.message);
+      });
+  }
+  @Get('/:id')
+  @ApiOperation({ summary: 'Get address by id' })
+  async getAddress(@Param('id') id: number) {
+    return await this.addressService
+      .getAddress(id)
       .then((result) => {
         return result;
       })

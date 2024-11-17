@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, Index, ManyToMany, JoinTable } from 'typeorm';
+import { User } from '../../users/entitties/user.entity';
 
 @Entity({
   name: 'address',
@@ -16,4 +17,12 @@ export class Address {
 
   @Column({ nullable: false, type: 'varchar', length: 10 })
   houseNumber: string;
+
+  @ManyToMany((type) => User, { cascade: true })
+  @JoinTable({
+    name: 'user_with_address',
+    joinColumn: { name: 'address_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'user_id', referencedColumnName: 'id' },
+  })
+  users: User[];
 }
